@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:timer_builder/timer_builder.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -36,7 +38,7 @@ class _MainPageState extends State<MainPage> {
     _H2O = new StreamController<bool>.broadcast();
     _H2O.add(false);
     _Heater.add(false);
-     socket = IO.io('http://localhost:9000',
+     socket = IO.io('http://192.168.0.27:9000',
       IO.OptionBuilder().setTransports(['websocket']).build()
     );
     socket.connect();
@@ -84,10 +86,22 @@ class _MainPageState extends State<MainPage> {
     var screenWidthSize = MediaQuery.of(context).size.width;
     return SafeArea(child: Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        leadingWidth: 100,
+        leading: Image.asset('assets/images/hoseo_logo-re.png' ),
         title: Text(
-            "수조현황"
+            screenWidthSize > 450 ? "인공지능 기반 스마트양식 수질 관리시스템" : "인공지능 기반 스마트양식\n수질 관리시스템",
+          // screenWidthSize.toString(),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: screenWidthSize > 450 ? 18 : 14,
+              fontWeight: FontWeight.bold
+            ),
           // screenWidthSize.toString()
         ),
+        actions: [
+          Image.asset('assets/images/hcic_logo-re.png' ,width: 100,)
+        ],
       ),
       body: screenWidthSize > 865 ? Webpage(context) : Mobilepage(context),
     ));
@@ -167,8 +181,20 @@ class SalesData{
 }
 
 Widget Webpage(BuildContext context){
+
   return Column(
     children: [
+      Container(alignment: Alignment.center,height: 50,width:double.infinity , color: Colors.black,
+      child: TimerBuilder.periodic(const Duration(seconds: 1), builder: (context){
+        return Text(
+          formatDate(DateTime.now(), [hh,':' ,nn , ":" , ss]),
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 50
+          ),
+        );
+      }),),
       Expanded(
         flex: 1,
         child: Padding(
@@ -226,6 +252,17 @@ Widget Webpage(BuildContext context){
 Widget Mobilepage(BuildContext context){
   return ListView(
     children: [
+      Container(alignment: Alignment.center,height: 50,width:double.infinity , color: Colors.black,
+        child: TimerBuilder.periodic(const Duration(seconds: 1), builder: (context){
+          return Text(
+            formatDate(DateTime.now(), [hh,':' ,nn , ":" , ss ]),
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 40
+            ),
+          );
+        }),),
       RTDchart(),
       PHchart(),
       DOchart(),
@@ -259,7 +296,7 @@ Widget Mobilepage(BuildContext context){
 SfCartesianChart RTDchart(){
   return SfCartesianChart(
     title: ChartTitle(
-        text: "RTD"
+        text: "RTD (수온)"
     ),
     series: <ChartSeries>[
       LineSeries<SalesData,int>(
@@ -268,22 +305,30 @@ SfCartesianChart RTDchart(){
           },
           dataSource: _RTDdata,
           xValueMapper: (SalesData sales , _) => sales.x,
-          yValueMapper: (SalesData sales , _) => sales.y)
+          yValueMapper: (SalesData sales , _) => sales.y,
+          markerSettings: MarkerSettings(isVisible: true,
+          borderColor: Colors.red,
+          borderWidth: 1),
+        dataLabelSettings: DataLabelSettings(
+          isVisible: true,
+        )
+      )
     ],
-    primaryXAxis: NumericAxis(edgeLabelPlacement: EdgeLabelPlacement.shift , majorGridLines: const MajorGridLines(width: 0)),
+    primaryXAxis: NumericAxis(edgeLabelPlacement: EdgeLabelPlacement.shift , majorGridLines: const MajorGridLines(width: 0 ,color:  Colors.greenAccent)),
     primaryYAxis: NumericAxis(
         axisLine: const AxisLine(width: 0),
-        majorTickLines: const MajorTickLines(width: 0),
-        minimum: 10,
-        maximum: 35
+        majorTickLines: const MajorTickLines(width: 0, color: Colors.greenAccent),
+        minimum: 20,
+        maximum: 30,
     ),
+
   );
 }
 
 SfCartesianChart PHchart(){
   return SfCartesianChart(
     title: ChartTitle(
-        text: "PH"
+        text: "PH (이온 농도)"
     ),
     series: <ChartSeries>[
       LineSeries<SalesData,int>(
@@ -292,14 +337,22 @@ SfCartesianChart PHchart(){
           },
           dataSource: _PHdata,
           xValueMapper: (SalesData sales , _) => sales.x,
-          yValueMapper: (SalesData sales , _) => sales.y)
+          yValueMapper: (SalesData sales , _) => sales.y,
+      markerSettings: MarkerSettings(
+        isVisible: true,
+        borderWidth: 1,
+        borderColor: Colors.red
+      ),
+      dataLabelSettings: DataLabelSettings(
+        isVisible: true
+      ))
     ],
     primaryXAxis: NumericAxis(edgeLabelPlacement: EdgeLabelPlacement.shift , majorGridLines: const MajorGridLines(width: 0)),
     primaryYAxis: NumericAxis(
         axisLine: const AxisLine(width: 0),
         majorTickLines: const MajorTickLines(width: 0),
-        minimum: 10,
-        maximum: 35
+        minimum: 0,
+        maximum: 10
     ),
   );
 }
@@ -307,7 +360,7 @@ SfCartesianChart PHchart(){
 SfCartesianChart DOchart(){
   return SfCartesianChart(
     title: ChartTitle(
-        text: "DO"
+        text: "DO (용존 산소량)"
     ),
     series: <ChartSeries>[
       LineSeries<SalesData,int>(
@@ -316,14 +369,22 @@ SfCartesianChart DOchart(){
           },
           dataSource: _DOdata,
           xValueMapper: (SalesData sales , _) => sales.x,
-          yValueMapper: (SalesData sales , _) => sales.y)
+          yValueMapper: (SalesData sales , _) => sales.y,
+      markerSettings: MarkerSettings(
+        isVisible: true,
+        borderColor: Colors.red,
+        borderWidth: 1
+      ),
+      dataLabelSettings: DataLabelSettings(
+        isVisible: true
+      ))
     ],
     primaryXAxis: NumericAxis(edgeLabelPlacement: EdgeLabelPlacement.shift , majorGridLines: const MajorGridLines(width: 0)),
     primaryYAxis: NumericAxis(
         axisLine: const AxisLine(width: 0),
         majorTickLines: const MajorTickLines(width: 0),
-        minimum: 10,
-        maximum: 35
+        minimum: 0,
+        maximum: 10
     ),
   );
 }
