@@ -1,6 +1,6 @@
 # waterbox
 
-A new Flutter project.
+물고기 어항 수질 관리 시스템 웹 UI
 
 ## Getting Started
 
