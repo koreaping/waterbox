@@ -2,15 +2,9 @@
 
 물고기 어항 수질 관리 시스템 웹 UI
 
-## Getting Started
+소켓 통신을 이용하여 esp8266보드로 부터 받아오 pH , RTD , DO , EC 센서 데이터를 받아와 그래프로 그려준다. 
 
-This project is a starting point for a Flutter application.
+아두이노와 라즈베리파이와 USB연결을 통해 시리얼 직렬 통신으로 센서데이터를 받아온다.
 
-A few resources to get you started if this is your first Flutter project:
+라즈베리파이에서는 웹서버를 열어 시리얼통신으로 받아온 센서데이터를 flutter 앱과 소켓통신을 한다.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
